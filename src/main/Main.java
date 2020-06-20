@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-import static main.Matchup.*;
-
 public class Main extends TimerTask {
     
     FileManager fileMgr;
@@ -14,8 +12,9 @@ public class Main extends TimerTask {
     static int[] scoreZvT = new int[2];
     static int[] scoreZvZ = new int[2];
     static final String PYTHON_PATH = "C:\\Python\\Python382\\python.exe";
-    static final String SCRIPT_PATH = "src/main/resources/printReplay.py";
-    static final String REPLAY_PATH = "src/main/resources/replays";
+    static final String SCRIPT_PATH = "src/main/resources/printReplayShort.py";
+    static final String REPLAY_PATH = "E:\\SC2\\replayBackup";
+    static final String toon = "Gixxasaurus|Rairden";
 
     public Main() {
         this.fileMgr = new FileManager();
@@ -31,9 +30,9 @@ public class Main extends TimerTask {
     public void run() {
         // if (fileMgr.numberOfFiles() == fileMgr.numFiles) return;
 
-        scoreZvP[0] = scoreZvP[1] = 0;
-        scoreZvT[0] = scoreZvT[1] = 0;
-        scoreZvZ[0] = scoreZvZ[1] = 0;
+        Arrays.fill(scoreZvP, 0);
+        Arrays.fill(scoreZvT, 0);
+        Arrays.fill(scoreZvZ, 0);
 
         try {
             replayReader();
@@ -46,7 +45,7 @@ public class Main extends TimerTask {
         Scanner scan;
         String linuxCMD = String.format("%s %s %s", PYTHON_PATH, SCRIPT_PATH, REPLAY_PATH);
         String win10CMD = String.format("cmd /c %s %s %s", PYTHON_PATH, SCRIPT_PATH, REPLAY_PATH);
-        Process p = Runtime.getRuntime().exec(win10CMD);
+        Process p = Runtime.getRuntime().exec(linuxCMD);
         InputStream is = p.getInputStream();
 
         StringBuilder sb = new StringBuilder();
@@ -78,74 +77,36 @@ public class Main extends TimerTask {
     }
 
     private static void parseReplay(Scanner scan) {
-        Matchup m = null;
-        Player p1 = null;
-        Player p2 = null;
-
-        List<Player> players = new ArrayList<>();
-
         while (scan.hasNextLine()) {
             String line = scan.nextLine();
-            if (line.matches("^-+")) break;
+            if (line.matches("^-+")) return;
 
-            if (line.matches("^Win: Player [12].*")) {
+            if (line.matches("Zv[PTZ].*")) {
                 String[] s = line.split("\\s");
-                p1 = new Player(s[4], s[5], 1);
-                players.add(p1);
-            }
-            if (line.matches("^Loss: Player [12].*")) {
-                String[] s = line.split("\\s");
-                p2 = new Player(s[4], s[5], 0);
-                players.add(p2);
-            }
-        }
 
-        outer:
-        for (int i = 0; i < 2; i++) {
-            switch (players.get(i).race) {
-                case "(Zerg)" -> m = ZvZ;
-                case "(Protoss)" -> {
-                    m = ZvP;
-                    break outer;
+                switch (s[0]) {
+                    case "ZvP" -> {
+                        if (s[1].matches(toon)) {
+                            scoreZvP[0]++;
+                        } else {
+                            scoreZvP[1]++;
+                        }
+                    }
+                    case "ZvT" -> {
+                        if (s[1].matches(toon)) {
+                            scoreZvT[0]++;
+                        } else {
+                            scoreZvT[1]++;
+                        }
+                    }
+                    case "ZvZ" -> {
+                        if (s[1].matches(toon)) {
+                            scoreZvZ[0]++;
+                        } else {
+                            scoreZvZ[1]++;
+                        }
+                    }
                 }
-                case "(Terran)" -> {
-                    m = ZvT;
-                    break outer;
-                }
-            }
-        }
-
-        Replay rep = new Replay(p1, p2, m);
-        setScore(rep, m);
-    }
-
-    private static void setScore(Replay rep, Matchup m) {
-        if (rep.p1.name.matches("Gixxasaurus|Rairden")) {
-            assignScore(rep, m, 0, 1);
-        } else {
-            assignScore(rep, m, 1, 0);
-        }
-    }
-
-    private static void assignScore(Replay rep, Matchup m, int i, int k) {
-        switch (m) {
-            case ZvP -> {
-                if (rep.p1.win == 1)
-                    scoreZvP[i]++;
-                else
-                    scoreZvP[k]++;
-            }
-            case ZvT -> {
-                if (rep.p1.win == 1)
-                    scoreZvT[i]++;
-                else
-                    scoreZvT[k]++;
-            }
-            case ZvZ -> {
-                if (rep.p1.win == 1)
-                    scoreZvZ[i]++;
-                else
-                    scoreZvZ[k]++;
             }
         }
     }

@@ -27,8 +27,7 @@ def printReplay(filepath, arguments):
     if p2Race == 'P' or p2Race == 'T':
         opponent = p2Race
 
-    print('Zv' + opponent)
-    print(winner)
+    print('Zv' + opponent + ' ' + winner)
 
 
 def main():
