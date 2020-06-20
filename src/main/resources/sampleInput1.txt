@@ -1,0 +1,64 @@
+
+--------------------------------------
+/home/erik/scratch/replays/2019-11-05 [ZvP] silver, Gixxasaurus - Ephemeron LE.SC2Replay
+
+Date: 2019-11-05 16:34:25
+Map: Ephemeron LE
+Win: Player 1 - silver (Protoss)
+Loss: Player 2 - Gixxasaurus (Zerg)
+
+--------------------------------------
+/home/erik/scratch/replays/2020-06-12 [ZvT] senya, Rairden - Pillars of Gold LE.SC2Replay
+
+Date: 2020-06-12 12:57:26
+Map: Pillars of Gold LE
+Win: Player 1 - senya (Terran)
+Loss: Player 2 - Rairden (Zerg)
+
+--------------------------------------
+/home/erik/scratch/replays/2020-06-16 [ZvT] tobe, Rairden - Submarine LE.SC2Replay
+
+Date: 2020-06-16 07:05:58
+Map: Submarine LE
+Win: Player 1 - tobe (Terran)
+Loss: Player 2 - Rairden (Zerg)
+
+--------------------------------------
+/home/erik/scratch/replays/2020-06-16 [ZvP] PiotrekS, Rairden - Ice and Chrome LE.SC2Replay
+
+Date: 2020-06-16 09:03:37
+Map: Ice and Chrome LE
+Win: Player 1 - PiotrekS (Protoss)
+Loss: Player 2 - Rairden (Zerg)
+
+--------------------------------------
+/home/erik/scratch/replays/2020-06-12 [ZvT] vapit, Rairden - Ice and Chrome LE.SC2Replay
+
+Date: 2020-06-12 09:16:30
+Map: Ice and Chrome LE
+Loss: Player 1 - Rairden (Zerg)
+Win: Player 2 - vapit (Terran)
+
+--------------------------------------
+/home/erik/scratch/replays/2020-06-16 [ZvP] Rairden, Alby - Pillars of Gold LE.SC2Replay
+
+Date: 2020-06-16 07:18:03
+Map: Pillars of Gold LE
+Loss: Player 1 - Alby (Protoss)
+Win: Player 2 - Rairden (Zerg)
+
+--------------------------------------
+/home/erik/scratch/replays/2019-11-05 [ZvZ] Zed, Gixxasaurus - Acropolis LE.SC2Replay
+
+Date: 2019-11-05 16:00:41
+Map: Acropolis LE
+Loss: Player 1 - Gixxasaurus (Zerg)
+Win: Player 2 - Zed (Zerg)
+
+--------------------------------------
+/home/erik/scratch/replays/2020-06-16 [ZvZ] Rairden, Brubbster - Eternal Empire LE.SC2Replay
+
+Date: 2020-06-16 07:21:38
+Map: Eternal Empire LE
+Win: Player 1 - Rairden (Zerg)
+Loss: Player 2 - Brubbster (Zerg)
