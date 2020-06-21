@@ -3,11 +3,12 @@ package main;
 import java.io.*;
 import java.util.Arrays;
 
+import static main.Settings.DIR_REPLAYS;
+
 public class FileManager {
 
     File file;
     int numFiles;
-    String DIR_REPLAYS = "E:\\SC2\\replayBackup";
 
     public FileManager() {
         file = new File(DIR_REPLAYS);

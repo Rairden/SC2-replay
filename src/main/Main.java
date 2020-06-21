@@ -3,22 +3,21 @@ package main;
 import java.io.*;
 import java.util.*;
 
+import static main.Settings.*;
+
 public class Main extends TimerTask {
     
     FileManager fileMgr;
     static int[] scoreZvP = new int[2];
     static int[] scoreZvT = new int[2];
     static int[] scoreZvZ = new int[2];
-    static final String PYTHON_PATH = "C:\\Python\\Python382\\python.exe";
-    static final String SCRIPT_PATH = "src/main/resources/printReplayShort.py";
-    static final String REPLAY_PATH = "E:\\SC2\\replayBackup";
-    static final String toon = "Gixxasaurus|Rairden";
 
     public Main() {
         this.fileMgr = new FileManager();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        new Settings();
         Timer timer = new Timer();
         Main timerTask = new Main();
         timer.schedule(timerTask, 0, 5000);
@@ -41,9 +40,9 @@ public class Main extends TimerTask {
 
     private void replayReader() throws IOException {
         Scanner scan;
-        String linuxCMD = String.format("%s %s %s", PYTHON_PATH, SCRIPT_PATH, REPLAY_PATH);
-        String win10CMD = String.format("cmd /c %s %s %s", PYTHON_PATH, SCRIPT_PATH, REPLAY_PATH);
-        Process p = Runtime.getRuntime().exec(win10CMD);
+        String linuxCMD = String.format("%s %s %s", PATH_PYTHON, PATH_SCRIPT, DIR_REPLAYS);
+        String win10CMD = String.format("cmd /c %s %s %s", PATH_PYTHON, PATH_SCRIPT, DIR_REPLAYS);
+        Process p = Runtime.getRuntime().exec(linuxCMD);
         InputStream is = p.getInputStream();
 
         StringBuilder sb = new StringBuilder();
@@ -58,9 +57,9 @@ public class Main extends TimerTask {
             parseReplay(scan);
         }
 
-        System.out.println("ZvP = " + scoreZvP[0] + " - " + scoreZvP[1]);
-        System.out.println("ZvT = " + scoreZvT[0] + " - " + scoreZvT[1]);
-        System.out.println("ZvZ = " + scoreZvZ[0] + " - " + scoreZvZ[1]);
+        System.out.println("ZvP: " + scoreZvP[0] + " - " + scoreZvP[1]);
+        System.out.println("ZvT: " + scoreZvT[0] + " - " + scoreZvT[1]);
+        System.out.println("ZvZ: " + scoreZvZ[0] + " - " + scoreZvZ[1]);
 
         // save files to current jar execution dir
         saveFile(System.getProperty("user.dir") + File.separator, "ZvP.txt", scoreZvP);
@@ -88,6 +87,6 @@ public class Main extends TimerTask {
     }
 
     private static int setScore(String[] s, int[] scoreZvX) {
-        return s[1].matches(toon) ? scoreZvX[0]++ : scoreZvX[1]++;
+        return s[1].matches(PLAYER) ? scoreZvX[0]++ : scoreZvX[1]++;
     }
 }
