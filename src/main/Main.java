@@ -1,8 +1,6 @@
 package main;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 public class Main extends TimerTask {
@@ -45,7 +43,7 @@ public class Main extends TimerTask {
         Scanner scan;
         String linuxCMD = String.format("%s %s %s", PYTHON_PATH, SCRIPT_PATH, REPLAY_PATH);
         String win10CMD = String.format("cmd /c %s %s %s", PYTHON_PATH, SCRIPT_PATH, REPLAY_PATH);
-        Process p = Runtime.getRuntime().exec(linuxCMD);
+        Process p = Runtime.getRuntime().exec(win10CMD);
         InputStream is = p.getInputStream();
 
         StringBuilder sb = new StringBuilder();
@@ -55,8 +53,6 @@ public class Main extends TimerTask {
         }
 
         scan = new Scanner(sb.toString());
-        scan.nextLine();
-        scan.nextLine();
 
         while (scan.hasNextLine()) {
             parseReplay(scan);
@@ -79,35 +75,19 @@ public class Main extends TimerTask {
     private static void parseReplay(Scanner scan) {
         while (scan.hasNextLine()) {
             String line = scan.nextLine();
-            if (line.matches("^-+")) return;
+            if (!line.matches("Zv[PTZ].*")) continue;
 
-            if (line.matches("Zv[PTZ].*")) {
-                String[] s = line.split("\\s");
+            String[] s = line.split("\\s");
 
-                switch (s[0]) {
-                    case "ZvP" -> {
-                        if (s[1].matches(toon)) {
-                            scoreZvP[0]++;
-                        } else {
-                            scoreZvP[1]++;
-                        }
-                    }
-                    case "ZvT" -> {
-                        if (s[1].matches(toon)) {
-                            scoreZvT[0]++;
-                        } else {
-                            scoreZvT[1]++;
-                        }
-                    }
-                    case "ZvZ" -> {
-                        if (s[1].matches(toon)) {
-                            scoreZvZ[0]++;
-                        } else {
-                            scoreZvZ[1]++;
-                        }
-                    }
-                }
+            switch (s[0]) {
+                case "ZvP" -> setScore(s, scoreZvP);
+                case "ZvT" -> setScore(s, scoreZvT);
+                case "ZvZ" -> setScore(s, scoreZvZ);
             }
         }
+    }
+
+    private static int setScore(String[] s, int[] scoreZvX) {
+        return s[1].matches(toon) ? scoreZvX[0]++ : scoreZvX[1]++;
     }
 }
