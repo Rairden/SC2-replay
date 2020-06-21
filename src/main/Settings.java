@@ -65,15 +65,15 @@ public class Settings {
             // skip comments '#', sections [] or empty lines
             if (line.matches("^#.*|\\[.*|\\s*")) continue;
 
-            overRideSettings(line);
+            storeSettings(line);
         }
 
-        if (paths.get("replays") == null || paths.get("python") == null || paths.get("player") == null) {
-            throw new IllegalStateException("The minimum configuration is to populate: replays=, python=, toon=");
+        if (paths.get("replays") == null || paths.get("player") == null || paths.get("python") == null) {
+            throw new IllegalStateException("The minimum configuration is to populate: replays=, player=, python=");
         }
     }
 
-    private void overRideSettings(String line) {
+    private void storeSettings(String line) {
         String[] keyVal = line.trim().split("=");
 
         if (!(keyVal.length == 2)) return;

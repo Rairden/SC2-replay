@@ -14,6 +14,9 @@ def printReplay(filepath, arguments):
 
     replay = sc2reader.load_replay(filepath, load_level=2)
 
+    if len(replay.clients) == 1:
+        return
+
     p1 = replay.clients[0]
     p2 = replay.clients[1]
     p1Race = p1.team.lineup
@@ -57,9 +60,7 @@ def main():
         for filepath in utils.get_files(path, depth=depth):
             name, ext = os.path.splitext(filepath)
             if ext.lower() == ".sc2replay":
-                print(
-                    "\n--------------------------------------\n{0}\n".format(filepath)
-                )
+                # print("\n--------------------------------------\n{0}\n".format(filepath))
                 printReplay(filepath, arguments)
 
 

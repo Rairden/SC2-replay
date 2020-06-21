@@ -17,9 +17,8 @@ public class FileManager {
 
     public void save(String fullPath, int[] score) throws IOException {
         File file = new File(fullPath);
-        if (!isModified(fullPath, file, score)) {
-            return;
-        }
+        if (!isModified(fullPath, file, score)) return;
+
         writeFile(score, file);
     }
 
@@ -49,10 +48,7 @@ public class FileManager {
                 String[] strArr = str.trim().split("\\s");
                 int[] arr = {Integer.parseInt(strArr[0]), Integer.parseInt(strArr[2])};
 
-                if (Arrays.hashCode(arr) == Arrays.hashCode(score)) {
-                    // System.err.println("File hasn't changed");
-                    return false;
-                }
+                if (Arrays.hashCode(arr) == Arrays.hashCode(score)) return false;
             }
         }
         return true;

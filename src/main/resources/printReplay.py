@@ -47,9 +47,7 @@ def main():
         for filepath in utils.get_files(path, depth=depth):
             name, ext = os.path.splitext(filepath)
             if ext.lower() == ".sc2replay":
-                print(
-                    "\n--------------------------------------\n{0}\n".format(filepath)
-                )
+                print("\n--------------------------------------\n{0}\n".format(filepath))
                 printReplay(filepath, arguments)
 
 
