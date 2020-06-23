@@ -11,6 +11,7 @@ public class Main extends TimerTask {
     static int[] scoreZvP = new int[2];
     static int[] scoreZvT = new int[2];
     static int[] scoreZvZ = new int[2];
+    String cmd = String.format("%s %s %s", PATH_PYTHON, PATH_SCRIPT, DIR_REPLAYS);
 
     public Main() {
         this.fileMgr = new FileManager();
@@ -25,7 +26,8 @@ public class Main extends TimerTask {
 
     @Override
     public void run() {
-        if (fileMgr.numberOfFiles() == fileMgr.numFiles) return;
+        if (fileMgr.numFiles == fileMgr.numberOfFiles()) return;
+        fileMgr.numFiles = fileMgr.numberOfFiles();
 
         Arrays.fill(scoreZvP, 0);
         Arrays.fill(scoreZvT, 0);
@@ -39,23 +41,11 @@ public class Main extends TimerTask {
     }
 
     private void replayReader() throws IOException {
-        String OS = System.getProperty("os.name").toLowerCase();
-
-        String linuxCMD = String.format("%s %s %s", PATH_PYTHON, PATH_SCRIPT, DIR_REPLAYS);
-        String win10CMD = String.format("cmd /c %s %s %s", PATH_PYTHON, PATH_SCRIPT, DIR_REPLAYS);
-
-        String cmd = isWindows(OS) ? win10CMD : linuxCMD;
-
         Process p = Runtime.getRuntime().exec(cmd);
         InputStream is = p.getInputStream();
 
-        StringBuilder sb = new StringBuilder();
-        int i;
-        while ((i = is.read()) != -1) {
-            sb.append((char) i);
-        }
-
-        Scanner scan = new Scanner(sb.toString());
+        StringBuilder pythonStdOut = getPythonOutput(is);
+        Scanner scan = new Scanner(pythonStdOut.toString());
 
         while (scan.hasNextLine()) {
             parsePythonOutput(scan);
@@ -71,26 +61,33 @@ public class Main extends TimerTask {
         fileMgr.save(dir + fileName, score);
     }
 
+    private StringBuilder getPythonOutput(InputStream is) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        int i;
+        while ((i = is.read()) != -1) {
+            sb.append((char) i);
+        }
+        return sb;
+    }
+
     private static void parsePythonOutput(Scanner scan) {
         while (scan.hasNextLine()) {
             String line = scan.nextLine();
             if (!line.matches("Zv[PTZ].*")) continue;
 
             String[] s = line.split("\\s");
+            String matchup = s[0];
+            String name = s[1];
 
-            switch (s[0]) {
-                case "ZvP" -> setScore(s[1], scoreZvP);
-                case "ZvT" -> setScore(s[1], scoreZvT);
-                case "ZvZ" -> setScore(s[1], scoreZvZ);
+            switch (matchup) {
+                case "ZvP" -> setScore(name, scoreZvP);
+                case "ZvT" -> setScore(name, scoreZvT);
+                case "ZvZ" -> setScore(name, scoreZvZ);
             }
         }
     }
 
     private static int setScore(String name, int[] scoreZvX) {
         return name.matches(PLAYER) ? scoreZvX[0]++ : scoreZvX[1]++;
-    }
-
-    private static boolean isWindows(String OS) {
-        return OS.matches("windows.*");
     }
 }

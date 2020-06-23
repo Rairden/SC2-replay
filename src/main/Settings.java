@@ -2,7 +2,6 @@ package main;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -91,10 +90,5 @@ public class Settings {
         FileWriter fw = new FileWriter(userCfg);
         fw.write(sb.toString());
         fw.close();
-    }
-
-    // can't get this to work with forward/backslash or double backslash in settings.cfg (FileNotFoundException)
-    private void copyFile(InputStream src, File dest) throws IOException {
-        Files.copy(src, dest.toPath());
     }
 }

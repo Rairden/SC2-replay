@@ -54,21 +54,6 @@ public class FileManager {
         return true;
     }
 
-    // I only need to regex match the most recent file, not all 1000 files.
-    public File getLastModified() {
-        File[] files = this.file.listFiles(File::isFile);
-        long lastModifiedTime = Long.MIN_VALUE;
-
-        File chosenFile = files[0];
-        for (File f : files) {
-            if (f.lastModified() > lastModifiedTime) {
-                chosenFile = f;
-                lastModifiedTime = f.lastModified();
-            }
-        }
-        return chosenFile;
-    }
-
     public int numberOfFiles() {
         try {
             return file.list().length;
