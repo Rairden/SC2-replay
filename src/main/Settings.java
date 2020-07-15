@@ -2,11 +2,11 @@ package main;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import static main.Main.currentMMR;
 import static main.Main.startMMR;
 
 public class Settings {
@@ -38,19 +38,19 @@ public class Settings {
         PATH_SCRIPT = pythonScript.toString();
     }
 
-    private String setPath(String type) {
+    String setPath(String type) {
         if (paths.get(type) == null && type.equals("scores")) {
             return System.getProperty("user.dir") + File.separator;
         }
         return paths.get(type);
     }
 
-    private void createPythonScript(BufferedReader br, File pythonScript) throws IOException {
+    void createPythonScript(BufferedReader br, File pythonScript) throws IOException {
         if (pythonScript.exists()) return;
         copyFile(br, pythonScript);
     }
 
-    private void loadCfg(BufferedReader cfgTemplate, File userCfg) throws IOException {
+    void loadCfg(BufferedReader cfgTemplate, File userCfg) throws IOException {
         Scanner scan;
         if (userCfg.exists()) {
             scan = new Scanner(userCfg);
@@ -75,7 +75,7 @@ public class Settings {
         }
     }
 
-    private void storeSettings(String line) {
+    void storeSettings(String line) {
         String[] keyVal = line.trim().split("=");
 
         if (!(keyVal.length == 2)) return;
@@ -83,11 +83,11 @@ public class Settings {
         paths.put(keyVal[0], keyVal[1]);
     }
 
-    public void loadMMR() throws IOException {
+    void loadMMR() throws IOException {
         File mmrFile = new File(System.getProperty("user.dir") + File.separator + "MMR.txt");
         if (mmrFile.exists()) {
             Scanner scan = new Scanner(mmrFile);
-            startMMR = Integer.parseInt(scan.nextLine());
+            currentMMR = startMMR = Integer.parseInt(scan.nextLine());
         } else {
             FileWriter fw = new FileWriter(mmrFile);
             fw.write("0\n");
@@ -95,7 +95,7 @@ public class Settings {
         }
     }
 
-    private void copyFile(BufferedReader br, File userCfg) throws IOException {
+    void copyFile(BufferedReader br, File userCfg) throws IOException {
         String str = "";
         StringBuilder sb = new StringBuilder();
 
@@ -105,10 +105,5 @@ public class Settings {
         FileWriter fw = new FileWriter(userCfg);
         fw.write(sb.toString());
         fw.close();
-    }
-
-    // can't get this to work with forward/backslash or double backslash in settings.cfg (FileNotFoundException)
-    private void copyFile(InputStream src, File dest) throws IOException {
-        Files.copy(src, dest.toPath());
     }
 }

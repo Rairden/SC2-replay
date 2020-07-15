@@ -3,93 +3,125 @@ package main;
 import java.io.*;
 import java.util.*;
 
+import static main.FileManager.*;
 import static main.Settings.*;
 
 public class Main extends TimerTask {
-    
+
     FileManager fileMgr;
+    static int startMMR;
+    static int currentMMR;
     static int[] scoreZvP = new int[2];
     static int[] scoreZvT = new int[2];
     static int[] scoreZvZ = new int[2];
-    static int startMMR = 0;
-    static int[] currentMMR = new int[1];
-    static boolean reset = false;
-    String[] cmd1 = {PATH_PYTHON, PATH_SCRIPT, ""};
-    String[] cmd2 = {PATH_PYTHON, PATH_SCRIPT, DIR_REPLAYS};
+    static String[] cmdAllReplays;
+    static String[] cmdSingleReplay;
+    static boolean firstLoop = true;
 
     public Main() {
-        this.fileMgr = new FileManager();
+        fileMgr = new FileManager();
+        cmdAllReplays = new String[]{PATH_PYTHON, PATH_SCRIPT, DIR_REPLAYS};
+        cmdSingleReplay = new String[]{PATH_PYTHON, PATH_SCRIPT, ""};
     }
 
     public static void main(String[] args) throws IOException {
         Settings settings = new Settings();
-        startFromNonEmptyDir(args);
         settings.loadMMR();
-        Timer timer = new Timer();
         Main timerTask = new Main();
-        timer.schedule(timerTask, 0, 5000);
-    }
 
-    private static void startFromNonEmptyDir(String[] args) {
-        if (args.length == 0) return;
-        if (args[0].equals("--notempty")) reset = true;
+        if (numberOfFiles() > 0) {
+            File oldestFile = getLastModified(false);
+
+            cmdSingleReplay[2] = oldestFile.toString();
+            StringBuilder python_stdout = cmd(cmdSingleReplay);
+            Scanner scan = new Scanner(python_stdout.toString());
+
+            while (scan.hasNextLine()) {
+                String[] nameMMR = scan.nextLine().split("\\s");
+                String name = nameMMR[0];
+                if (!name.matches(PLAYER)) continue;
+
+                int mmr = Integer.parseInt(nameMMR[1]);
+                if (mmr <= 0) break;
+                startMMR = mmr;
+            }
+        }
+
+        Timer timer = new Timer();
+        timerTask.saveAllFiles();
+        timer.schedule(timerTask, 0, 5000);
     }
 
     @Override
     public void run() {
         try {
-            if (reset) {
-                replayReader(cmd2);
-            } else {
-                if (fileMgr.numberOfFiles() == fileMgr.numFiles) return;
-                File newestReplay = fileMgr.getLastModified();
-                if (newestReplay == null) return;
-                cmd1[2] = newestReplay.toString();
-                replayReader(cmd1);
+            if (!firstLoop) {
+                if (fileMgr.numFiles == numberOfFiles()) return;
             }
+            firstLoop = false;
+            fileMgr.numFiles = numberOfFiles();
+
+            Arrays.fill(scoreZvP, 0);
+            Arrays.fill(scoreZvT, 0);
+            Arrays.fill(scoreZvZ, 0);
+
+            replayReader();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void replayReader(String[] cmd) throws IOException {
-        fileMgr.numFiles = fileMgr.numberOfFiles();
+    static StringBuilder cmd(String[] cmd) throws IOException {
         Process p = Runtime.getRuntime().exec(cmd);
         InputStream is = p.getInputStream();
+        return getPythonOutput(is);
+    }
 
-        StringBuilder pythonStdOut = getPythonOutput(is);
-        Scanner scan = new Scanner(pythonStdOut.toString());
+    void replayReader() throws IOException {
+        File newestReplay = getLastModified(true);
+        if (newestReplay != null) {
+            cmdSingleReplay[2] = newestReplay.toString();
+        }
 
-        String matchup = "";
+        StringBuilder python_stdout = cmd(cmdAllReplays);
+        Scanner scan = new Scanner(python_stdout.toString());
+
         while (scan.hasNextLine()) {
-            matchup = parsePythonOutput(scan);
+            parsePythonOutput(scan);
         }
 
-        // save files to the current jar execution dir
-        if (reset) {
-            saveFile(System.getProperty("user.dir") + File.separator, "ZvP.txt", scoreZvP);
-            saveFile(System.getProperty("user.dir") + File.separator, "ZvT.txt", scoreZvT);
-            saveFile(System.getProperty("user.dir") + File.separator, "ZvZ.txt", scoreZvZ);
-            reset = false;
-        } else {
-            switch (matchup) {
-                case "ZvP" -> saveFile(System.getProperty("user.dir") + File.separator, "ZvP.txt", scoreZvP);
-                case "ZvT" -> saveFile(System.getProperty("user.dir") + File.separator, "ZvT.txt", scoreZvT);
-                case "ZvZ" -> saveFile(System.getProperty("user.dir") + File.separator, "ZvZ.txt", scoreZvZ);
+        saveAllFiles();
+
+        StringBuilder python_stdout1 = cmd(cmdSingleReplay);
+        Scanner scan1 = new Scanner(python_stdout1.toString());
+
+        while (scan1.hasNextLine()) {
+            String[] nameMMR = scan1.nextLine().split("\\s");
+            String name = nameMMR[0];
+
+            if (name.matches(PLAYER)) {
+                int mmr = Integer.parseInt(nameMMR[1]);
+                if (mmr <= 0) break;
+                currentMMR = mmr;
+
+                if (numberOfFiles() == 1 && fileMgr.readMMR() == 0) {
+                    startMMR = mmr;
+                }
+                break;
             }
-            saveMMR(System.getProperty("user.dir") + File.separator);
         }
+
+        fileMgr.saveMMR(currentMMR);
     }
 
-    private void saveFile(String dir, String fileName, int[] score) throws IOException {
-        fileMgr.save(dir + fileName, score);
+    // save files to the current jar execution directory
+    void saveAllFiles() throws IOException {
+        saveFile(fileMgr.ZvP_txt, scoreZvP);
+        saveFile(fileMgr.ZvT_txt, scoreZvT);
+        saveFile(fileMgr.ZvZ_txt, scoreZvZ);
     }
 
-    private void saveMMR(String dir) throws IOException {
-        fileMgr.save(dir + "MMRdiff.txt", currentMMR);
-    }
-
-    private StringBuilder getPythonOutput(InputStream is) throws IOException {
+    static StringBuilder getPythonOutput(InputStream is) throws IOException {
         StringBuilder sb = new StringBuilder();
         int i;
         while ((i = is.read()) != -1) {
@@ -98,42 +130,22 @@ public class Main extends TimerTask {
         return sb;
     }
 
-    private static String parsePythonOutput(Scanner scan) {
-        while (scan.hasNextLine()) {
-            String line = scan.nextLine();
-            if (!line.matches("Zv[PTZ].*")) continue;
+    static void parsePythonOutput(Scanner scan) {
+        String line = scan.nextLine();
+        if (!line.matches("Zv[PTZ].*")) return;
 
-            String[] s = line.split("\\s");
-            String matchup = s[0];
-            String player = s[1];
+        String[] s = line.split("\\s");
+        String matchup = s[0];
+        String name = s[1];
 
-            while (scan.hasNextLine()) {
-                String mmr = scan.nextLine();
-                String[] nameMMR = mmr.split("\\s");
-
-                if (nameMMR[0].matches(PLAYER)) {
-                    if (Integer.parseInt(nameMMR[1]) <= 0) break;
-                    currentMMR[0] = Integer.parseInt(nameMMR[1]);
-                }
-            }
-
-            if (matchup.equals("ZvP")) {
-                setScore(player, scoreZvP);
-                return "ZvP";
-            }
-            if (matchup.equals("ZvT")) {
-                setScore(player, scoreZvT);
-                return "ZvT";
-            }
-            if (matchup.equals("ZvZ")) {
-                setScore(player, scoreZvZ);
-                return "ZvZ";
-            }
+        switch (matchup) {
+            case "ZvP" -> setScore(name, scoreZvP);
+            case "ZvT" -> setScore(name, scoreZvT);
+            case "ZvZ" -> setScore(name, scoreZvZ);
         }
-        return null;
     }
 
-    private static int setScore(String name, int[] scoreZvX) {
+    static int setScore(String name, int[] scoreZvX) {
         return name.matches(PLAYER) ? scoreZvX[0]++ : scoreZvX[1]++;
     }
 }

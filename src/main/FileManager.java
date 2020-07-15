@@ -2,41 +2,37 @@ package main;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.Scanner;
 
 import static main.Main.*;
 import static main.Settings.DIR_REPLAYS;
 
 public class FileManager {
 
-    File file;
     int numFiles;
+    static File replayDir;
+    File MMRdiff_txt;
+    File MMR_txt;
+    File ZvP_txt;
+    File ZvT_txt;
+    File ZvZ_txt;
 
     public FileManager() {
-        file = new File(DIR_REPLAYS);
+        replayDir = new File(DIR_REPLAYS);
         numFiles = numberOfFiles();
+        MMRdiff_txt =  new File(System.getProperty("user.dir") + File.separator + "MMR-diff.txt");
+        MMR_txt =  new File(System.getProperty("user.dir") + File.separator + "MMR.txt");
+        ZvP_txt =  new File(System.getProperty("user.dir") + File.separator + "ZvP.txt");
+        ZvT_txt =  new File(System.getProperty("user.dir") + File.separator + "ZvT.txt");
+        ZvZ_txt =  new File(System.getProperty("user.dir") + File.separator + "ZvZ.txt");
     }
 
-    public void save(String fullPath, int[] score) throws IOException {
-        File file = new File(fullPath);
-
-        if (reset) {
-            writeFile(score, file);
-            return;
-        }
-
-        // if (!isModified(fullPath, file, score)) return;      // (Index 2 out of bounds for length 1)
-
-        String caller = Thread.currentThread().getStackTrace()[2].getMethodName();
-
-        if (caller.equals("saveFile")) {
-            writeFile(score, file);
-        } else if (caller.equals("saveMMR")) {
-            writeMMR(score);
-            writeMMRDiff(score, file);
-        }
+    static void saveFile(File f, int[] score) throws IOException {
+        if (!isModified(f, score)) return;
+        writeFile(f, score);
     }
 
-    private void writeFile(int[] score, File f) throws IOException {
+    static void writeFile(File f, int[] score) throws IOException {
         StringBuilder sb = new StringBuilder();
         String race1 = String.format("%2s", score[0]);
 
@@ -47,20 +43,34 @@ public class FileManager {
         fw.close();
     }
 
-    private void writeMMR(int[] mmr) throws IOException {
-        File f = new File(System.getProperty("user.dir") + File.separator + "MMR.txt");
-        FileWriter fw = new FileWriter(f);
+    void saveMMR(int mmr) throws IOException {
+        writeMMRDiff(MMRdiff_txt, mmr);
+        writeMMR(mmr);
+    }
 
-        fw.write(mmr[0] + "\n");
+    int readMMR() throws IOException {
+        Scanner scan = new Scanner(MMR_txt);
+        return Integer.parseInt(scan.nextLine());
+    }
+
+    void writeMMR(int mmr) throws IOException {
+        FileWriter fw = new FileWriter(MMR_txt);
+
+        fw.write(mmr + "\n");
         fw.close();
     }
 
-    private void writeMMRDiff(int[] mmr, File f) throws IOException {
-        if (mmr[0] == 0) return;
-        int difference = startMMR - mmr[0];
-        String result = "";
-
+    void writeMMRDiff(File f, int mmr) throws IOException {
         FileWriter fw = new FileWriter(f);
+
+        if (numFiles == 0) {
+            fw.write("+0 MMR\n");
+            fw.close();
+            return;
+        }
+
+        int difference = startMMR - mmr;
+        String result = "";
 
         if (difference <= 0) {
             difference *= -1;
@@ -71,18 +81,17 @@ public class FileManager {
 
         fw.write(result + "\n");
         fw.close();
-        writeMMR(mmr);
     }
 
     /**
-     * There's no need to write to disk if the data has not changed.
+     * There's no need to write to disk if the data hasn't changed.
      *
      * @return false if the existing file matches the data that has been parsed.
      * @throws IOException If an I/O error occurs
      */
-    private boolean isModified(String fullPath, File file, int[] score) throws IOException {
+    static boolean isModified(File file, int[] score) throws IOException {
         if (file.length() > 0) {
-            BufferedReader br = new BufferedReader(new FileReader(fullPath));
+            BufferedReader br = new BufferedReader(new FileReader(file.toString()));
             String str;
 
             while ((str = br.readLine()) != null) {
@@ -95,10 +104,14 @@ public class FileManager {
         return true;
     }
 
-    // I only need to regex match the most recent file, not all 1000 files.
-    public File getLastModified() {
-        File[] files = this.file.listFiles(File::isFile);
+    /**
+     * @param lastModified True if you want the most recent file, otherwise the oldest file.
+     * @return Either the newest or oldest file.
+     */
+    static File getLastModified(boolean lastModified) {
+        File[] files = replayDir.listFiles(File::isFile);
         long lastModifiedTime = Long.MIN_VALUE;
+        long leastModifiedTime = Long.MAX_VALUE;
 
         File chosenFile;
         try {
@@ -106,18 +119,28 @@ public class FileManager {
         } catch (Exception e) {
             return null;
         }
-        for (File f : files) {
-            if (f.lastModified() > lastModifiedTime) {
-                chosenFile = f;
-                lastModifiedTime = f.lastModified();
+
+        if (lastModified) {
+            for (File f : files) {
+                if (f.lastModified() > lastModifiedTime) {
+                    chosenFile = f;
+                    lastModifiedTime = f.lastModified();
+                }
+            }
+        } else {
+            for (File f : files) {
+                if (f.lastModified() < leastModifiedTime) {
+                    chosenFile = f;
+                    leastModifiedTime = f.lastModified();
+                }
             }
         }
         return chosenFile;
     }
 
-    public int numberOfFiles() {
+    static int numberOfFiles() {
         try {
-            return file.list().length;
+            return replayDir.list().length;
         } catch (Exception e) {
             return 0;
         }
