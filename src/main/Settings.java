@@ -2,9 +2,12 @@ package main;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+
+import static main.Main.startMMR;
 
 public class Settings {
 
@@ -80,6 +83,18 @@ public class Settings {
         paths.put(keyVal[0], keyVal[1]);
     }
 
+    public void loadMMR() throws IOException {
+        File mmrFile = new File(System.getProperty("user.dir") + File.separator + "MMR.txt");
+        if (mmrFile.exists()) {
+            Scanner scan = new Scanner(mmrFile);
+            startMMR = Integer.parseInt(scan.nextLine());
+        } else {
+            FileWriter fw = new FileWriter(mmrFile);
+            fw.write("0\n");
+            fw.close();
+        }
+    }
+
     private void copyFile(BufferedReader br, File userCfg) throws IOException {
         String str = "";
         StringBuilder sb = new StringBuilder();
@@ -90,5 +105,10 @@ public class Settings {
         FileWriter fw = new FileWriter(userCfg);
         fw.write(sb.toString());
         fw.close();
+    }
+
+    // can't get this to work with forward/backslash or double backslash in settings.cfg (FileNotFoundException)
+    private void copyFile(InputStream src, File dest) throws IOException {
+        Files.copy(src, dest.toPath());
     }
 }

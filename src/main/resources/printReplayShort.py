@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals, division
 
+import json
 import os
 import argparse
 
+import mpyq
 import sc2reader
 from sc2reader import utils
 
@@ -17,20 +19,36 @@ def printReplay(filepath, arguments):
     if len(replay.clients) == 1:
         return
 
-    p1 = replay.clients[0]
-    p2 = replay.clients[1]
-    p1Race = p1.team.lineup
-    p2Race = p2.team.lineup
+    p0 = replay.clients[0]
+    p1 = replay.clients[1]
+    p1Race = p0.team.lineup
+    p2Race = p1.team.lineup
     winner = replay.winner.players[0].name
 
     if p1Race == 'P' or p1Race == 'T':
         opponent = p1Race
     else:
         opponent = 'Z'
+
     if p2Race == 'P' or p2Race == 'T':
         opponent = p2Race
 
+    archive = mpyq.MPQArchive(replay.filename)
+    jsondata = archive.read_file("replay.gamemetadata.json").decode("utf-8")
+    obj = json.loads(jsondata)
+
     print('Zv' + opponent + ' ' + winner)
+
+    try:
+        mmr0 = obj['Players'][0]['MMR']
+        print(p0.name + ' ' + str(mmr0))
+    except:
+        pass
+    try:
+        mmr1 = obj['Players'][1]['MMR']
+        print(p1.name + ' ' + str(mmr1))
+    except:
+        pass
 
 
 def main():
