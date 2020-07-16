@@ -12,37 +12,29 @@ import static main.Main.startMMR;
 public class Settings {
 
     static Map<String, String> paths;
-    static String DIR_SCORES;
     static String DIR_REPLAYS;
     static String PLAYER;
     static String PATH_PYTHON;
     static String PATH_SCRIPT;
+    static String userDir = System.getProperty("user.dir") + File.separator;
 
     public Settings() throws IOException {
         InputStream is = getClass().getResourceAsStream("resources/settings.cfg");
         BufferedReader cfgTemplate = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-        File userCfg = new File(System.getProperty("user.dir") + File.separator + "settings.cfg");   // creates settings.cfg in jar execution dir
+        File userCfg = new File(userDir + "settings.cfg");
 
         InputStream script = getClass().getResourceAsStream("resources/printReplayShort.py");
         BufferedReader br = new BufferedReader(new InputStreamReader(script, StandardCharsets.UTF_8));
-        File pythonScript = new File(System.getProperty("user.dir") + File.separator + "printReplayShort.py");
+        File pythonScript = new File(userDir + "printReplayShort.py");
 
         paths = new HashMap<>();
         loadCfg(cfgTemplate, userCfg);
         createPythonScript(br, pythonScript);
 
-        DIR_SCORES  = setPath("scores");
-        DIR_REPLAYS = setPath("replays");
-        PLAYER      = setPath("player");
-        PATH_PYTHON = setPath("python");
+        DIR_REPLAYS = paths.get("replays");
+        PLAYER      = paths.get("player");
+        PATH_PYTHON = paths.get("python");
         PATH_SCRIPT = pythonScript.toString();
-    }
-
-    String setPath(String type) {
-        if (paths.get(type) == null && type.equals("scores")) {
-            return System.getProperty("user.dir") + File.separator;
-        }
-        return paths.get(type);
     }
 
     void createPythonScript(BufferedReader br, File pythonScript) throws IOException {
@@ -84,7 +76,7 @@ public class Settings {
     }
 
     void loadMMR() throws IOException {
-        File mmrFile = new File(System.getProperty("user.dir") + File.separator + "MMR.txt");
+        File mmrFile = new File(userDir + "MMR.txt");
         if (mmrFile.exists()) {
             Scanner scan = new Scanner(mmrFile);
             currentMMR = startMMR = Integer.parseInt(scan.nextLine());

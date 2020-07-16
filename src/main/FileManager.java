@@ -4,8 +4,9 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import static main.Main.*;
+import static main.Main.startMMR;
 import static main.Settings.DIR_REPLAYS;
+import static main.Settings.userDir;
 
 public class FileManager {
 
@@ -20,11 +21,11 @@ public class FileManager {
     public FileManager() {
         replayDir = new File(DIR_REPLAYS);
         numFiles = numberOfFiles();
-        MMRdiff_txt =  new File(System.getProperty("user.dir") + File.separator + "MMR-diff.txt");
-        MMR_txt =  new File(System.getProperty("user.dir") + File.separator + "MMR.txt");
-        ZvP_txt =  new File(System.getProperty("user.dir") + File.separator + "ZvP.txt");
-        ZvT_txt =  new File(System.getProperty("user.dir") + File.separator + "ZvT.txt");
-        ZvZ_txt =  new File(System.getProperty("user.dir") + File.separator + "ZvZ.txt");
+        MMRdiff_txt = new File(userDir + "MMR-diff.txt");
+        MMR_txt = new File(userDir + "MMR.txt");
+        ZvP_txt = new File(userDir + "ZvP.txt");
+        ZvT_txt = new File(userDir + "ZvT.txt");
+        ZvZ_txt = new File(userDir + "ZvZ.txt");
     }
 
     static void saveFile(File f, int[] score) throws IOException {
